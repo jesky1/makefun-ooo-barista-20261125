@@ -67,6 +67,21 @@ export function validateLine(line) {
   if (line !== line.trim()) {
     throw new Error('Line must not start or end with whitespace.');
   }
+  // No double spaces: a collapsed gap would read as a typo in a line
+  // that is supposed to look like a real inbox reply.
+  if (line.includes('  ')) {
+    throw new Error('Line must not contain double spaces.');
+  }
+  // The reply must end with terminal punctuation: a sign-off that just
+  // stops reads unfinished, and the entry ends "(ret.)" by design.
+  if (!/[.!?)]$/.test(line)) {
+    throw new Error('Line must end with terminal punctuation.');
+  }
+  // No URLs: a link in an auto-reply would look like spam, not a
+  // barista's sign-off, and the judge reads the line cold.
+  if (/https?:\/\/|www\./i.test(line)) {
+    throw new Error('Line must not contain URLs.');
+  }
 }
 
 validateLine(REPLY);
